@@ -62,10 +62,13 @@ for die in range(num_of_dice):
 for line in range(5):
     for die in dice:
         # die is the number 1 - 6
+
+        # end="" creates the horizontal readability
         print(dice_art.get(die)[line], end="")
     print()
 
 for die in dice:
     # += the current value
     total += die
+# prints the sum of the die
 print(f"total: {total}")
