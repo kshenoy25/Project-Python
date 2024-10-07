@@ -29,11 +29,11 @@ class DigitalClock(QWidget):
 
         ########################################################################################################################
         # using a custom font
-        font_id = QFontDatabase.addApplicationFont("../PythonDigitalClockDemo/digital-7.ttf")
+        #font_id = QFontDatabase.addApplicationFont("../PythonDigitalClockDemo/digital-7.ttf")
         # returns a list of font names and using an index as we are working with a list
-        font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
-        my_font = QFont(font_family, 150)
-        self.time_label.setFont(my_font)
+        #font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+        #my_font = QFont(font_family, 150)
+        #self.time_label.setFont(my_font)
         ########################################################################################################################
 
         # timer to keep track of the current time
