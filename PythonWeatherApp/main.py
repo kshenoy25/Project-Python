@@ -13,9 +13,9 @@ class WeatherApp(QWidget):
         self.city_input = QLineEdit(self)
         self.get_weather_button = QPushButton("Get Weather", self)
 
-        self.temperature_label = QLabel("70°F", self)
-        self.emoji_label = QLabel("☀", self)
-        self.description_label = QLabel("Sunny", self)
+        self.temperature_label = QLabel(self)
+        self.emoji_label = QLabel(self)
+        self.description_label = QLabel(self)
 
         self.initUI()
 
@@ -49,16 +49,16 @@ class WeatherApp(QWidget):
         self.description_label.setObjectName("description_label")
 
         self.setStyleSheet("""
-            QLabel{
+            QLabel, QPushButton{
                 font-family: calibri;
             }
             QLabel#city_label{
-                font-size: 40px;
+                font-size: 30px;
                 font-style: italic;
                 
             }
             QLineEdit#city_input{
-                font-size: 40px;
+                font-size: 20px;
             
             }
             QPushButton#get_weather_button{
@@ -71,10 +71,40 @@ class WeatherApp(QWidget):
             QLabel#emoji_label{
                 font-size: 100px;
                 font-family: Segoe UI emoji;
+            }
+            QLabel#description_label{
+                font-size: 50px;
             }     
         
         """)
+        self.get_weather_button.clicked.connect(self.get_weather)
 
+    def get_weather(self):
+        # api key from the open weather web application
+        api_key = "09d220bc3723fee24b13ba2c02a5521b"
+        # accessing the city
+        city = self.city_input.text()
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
+
+        try:
+            response = requests.get(url)
+            # raise an exception if there are any HTTPErrors
+            response.raise_for_status()
+            data = response.json()
+
+
+            # status code testing
+            if data["cod"] == 200:
+                self.display_weather(data)
+        except requests.exceptions.HTTPError:
+            pass
+        except requests.exceptions.RequestException:
+            pass
+
+    def display_error(self, error):
+        pass
+    def display_weather(self, data):
+        print(data)
 
 
 if __name__ == '__main__':
