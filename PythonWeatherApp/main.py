@@ -1,4 +1,7 @@
 import sys
+from gc import get_count
+from pyexpat.errors import messages
+
 import requests
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QLabel, QLineEdit, QVBoxLayout,)
 
@@ -53,7 +56,7 @@ class WeatherApp(QWidget):
                 font-family: calibri;
             }
             QLabel#city_label{
-                font-size: 30px;
+                font-size: 20px;
                 font-style: italic;
                 
             }
@@ -66,7 +69,7 @@ class WeatherApp(QWidget):
                 font-weight: bold;
             }
             QLabel#temperature_label{
-                font-size: 75px;
+                font-size: 50px;
             }
             QLabel#emoji_label{
                 font-size: 100px;
@@ -96,15 +99,85 @@ class WeatherApp(QWidget):
             # status code testing
             if data["cod"] == 200:
                 self.display_weather(data)
-        except requests.exceptions.HTTPError:
-            pass
-        except requests.exceptions.RequestException:
-            pass
+        except requests.exceptions.HTTPError as http_error:
+            match response.status_code:
+                case 400:
+                    self.display_error("Bad request:\nPlease check your input")
+                case 401:
+                    self.display_error("Unauthorized:\nInvalid API key")
+                case 403:
+                    self.display_error("Forbidden:\nAccess denied")
+                case 404:
+                    self.display_error("Not found:\nCity not found")
+                case 500:
+                    self.display_error("Internal Server Error:\n Please try again later")
+                case 502:
+                    self.display_error("Bad Gateway\n:Invalid response from the server")
+                case 503:
+                    self.display_error("Server Unavailable:\nServer is down")
+                case 504:
+                    self.display_error("Gateway Timeout:\nNo response from the server")
 
-    def display_error(self, error):
-        pass
+                # wild card for unexpected error
+                case _:
+                    print(f"HTTP error occurred\n{http_error}")
+
+        except requests.exceptions.ConnectionError:
+            self.display_error("Connection Error:\nPlease check your internet connection")
+        except requests.exceptions.Timeout:
+            self.display_error("Timeout Error:\nPThe request timed out")
+        except requests.exceptions.TooManyRedirects:
+            self.display_error("Too many redirects:\nCheck the URL")
+        except requests.exceptions.RequestException as req_error:
+            self.display_error(f"Request Error:\n{req_error}")
+
+    def display_error(self, message):
+        self.temperature_label.setStyleSheet("font-size: 30px;")
+        self.temperature_label.setText(message)
+        self.emoji_label.clear()
+        self.description_label.clear()
+
     def display_weather(self, data):
-        print(data)
+        self.temperature_label.setStyleSheet("font-size: 75px;")
+        temperature_k = data["main"]["temp"]
+        temperature_c = temperature_k - 273.15
+        temperature_f = (temperature_k * 9 / 5) - 459.67
+        weather_id = data["weather"][0]["id"]
+
+        weather_description = data["weather"][0]["description"]
+
+
+
+        self.temperature_label.setText(f"{temperature_f:.0f}°F")
+        self.emoji_label.setText(self.get_weather_emoji(weather_id))
+        self.description_label.setText(weather_description)
+
+    @staticmethod
+    def get_weather_emoji(weather_id):
+        if 200 <= weather_id <= 300:
+            return "⛈️"
+        elif 300 <= weather_id <= 321:
+            return "🌦️️"
+        elif 500 <= weather_id <= 531:
+            return "🌧️"
+        elif 600 <= weather_id <= 622:
+            return "❄️"
+        elif 701 <= weather_id <= 741:
+            return "🌫️"
+        elif weather_id == 762:
+            return "🌋"
+        elif weather_id == 771:
+            return "💨"
+        elif weather_id == 781:
+            return "🌪️"
+        elif weather_id == 800:
+            return "☀️"
+        elif 801 <= weather_id <= 804:
+            return "☁️"
+        else:
+            return ""
+
+
 
 
 if __name__ == '__main__':
